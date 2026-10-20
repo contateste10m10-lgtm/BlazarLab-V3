@@ -1,0 +1,25 @@
+#!/usr/bin/env node
+'use strict';
+const fs = require('node:fs');
+const path = require('node:path');
+const assert = require('node:assert/strict');
+const root = path.resolve(__dirname, '..');
+const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+const js = fs.readFileSync(path.join(root, 'blazarlab.js'), 'utf8');
+const readme = fs.readFileSync(path.join(root, 'README.md'), 'utf8');
+const version = fs.readFileSync(path.join(root, 'VERSION'), 'utf8').trim();
+assert.equal(version, '1.3.40');
+assert.match(html, /m<sub>SE<\/sub> = 2 · r = 0,2σ/, 'o resultado publicado deve identificar o parâmetro como m_SE');
+assert.match(html, /m<sub>SE<\/sub> = 2 e r = 0,2σ/, 'o resumo metodológico deve identificar m_SE');
+assert.match(html, /O p foi calculado a partir de r<sub>P<\/sub> = −0,725 e N = 720; não é transcrito do resumo\./, 'o p calculado deve ser atribuído explicitamente a Pearson e distinguido do resumo');
+assert.match(html, /N = 720 · p bicaudal de Pearson ≈ 2,2 × 10<sup>−118<\/sup> \(calculado\)/, 'o valor de p de Pearson deve aparecer como cálculo, não como estatística transcrita');
+assert.match(html, /o resumo consultado não informa um p separado para Spearman/, 'não deve ser inventado um p de Spearman');
+assert.match(html, /r<sub>P<\/sub> = −0,725/, 'o coeficiente de Pearson reportado deve permanecer inalterado');
+assert.match(html, /ρ<sub>S<\/sub> = −0,734/, 'a correlação por postos deve permanecer inalterada');
+assert.match(html, /FSRQs<\/strong> 1,241 ± 0,474 <span>vs\.<\/span> <strong>BL Lacs<\/strong> 1,032 ± 0,542/, 'as estatísticas de classe devem permanecer inalteradas');
+assert.match(html, /dimensão m<sub>SE<\/sub> × tolerância r/, 'o mapa de sensibilidade deve nomear explicitamente m_SE');
+assert.match(js, /m_SE=/, 'tooltips do mapa de sensibilidade devem expor m_SE');
+assert.match(js, /colunas: dimensão m_SE/, 'a tabela móvel deve identificar a coluna m_SE');
+assert.match(html, /m<sub>SE<\/sub> e o índice de modulação intrínseco m<sub>int<\/sub> são grandezas diferentes/, 'a distinção m_SE versus m_int deve continuar explícita');
+assert.match(readme, /V1\.3\.37 — precisão científica dos rótulos/, 'a documentação deve registrar a versão editorial');
+console.log('OK: regressão editorial de m_SE, m_int e atribuição explícita do p de Pearson calculado — BlazarLab 1.3.40.');

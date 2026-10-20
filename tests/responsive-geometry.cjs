@@ -1,0 +1,24 @@
+#!/usr/bin/env node
+'use strict';
+const fs=require('node:fs');
+const path=require('node:path');
+const assert=require('node:assert/strict');
+const root=path.resolve(__dirname,'..');
+const css=fs.readFileSync(path.join(root,'styles.css'),'utf8');
+const js=fs.readFileSync(path.join(root,'blazarlab.js'),'utf8');
+const version=fs.readFileSync(path.join(root,'VERSION'),'utf8').trim();
+assert.equal(version,'1.3.40');
+assert.match(js,/function chartFrameWidth\(target\)/,'geometria deve usar a largura real do cartão');
+assert.match(js,/width: compactWidth/,'SVGs comuns devem usar viewBox próximo da largura CSS');
+assert.match(js,/Math\.abs\(width - previous\) >= 24/,'mudanças de largura dentro do breakpoint devem redesenhar gráficos');
+assert.match(js,/const plotWidth = Math.max\(320, Math.min\(1280, frameWidth\)\)/,'o heatmap desktop usa a largura útil do cartão');
+assert.match(js,/function sensitivityMobileTableMarkup\(/,'a matriz m × r tem uma variante transposta para o celular');
+assert.match(js,/const w=compact\?820:1020,h=compact\?1200:720,ml=compact\?112:155/,'o heatmap fonte × banda usa geometria móvel mais compacta');
+assert.match(css,/@media \(min-width:781px\) and \(max-width:1240px\)/,'o cabeçalho tem uma solução dedicada para tablet intermediário');
+assert.match(css,/\.header-inner\{display:grid;grid-template-columns:minmax\(0,1fr\) auto auto/,'marca, controles e menu não disputam a mesma linha flexível');
+assert.match(css,/\.mobile-plot-svg \.plot-label\{font-size:13px!important\}/,'rótulos dos gráficos compactos não dependem de uma fonte reduzida por escala SVG');
+assert.match(css,/sensitivity-svg-frame svg#sampenSensitivityPlot\{display:block;width:100%!important/,'o mapa m × r deve ocupar a largura do cartão em telas amplas');
+assert.match(css,/\.sensitivity-svg-frame\{display:none!important\}/,'a variante SVG deve ser substituída pela tabela móvel em telas estreitas');
+assert.match(css,/grid-template-columns:repeat\(10,minmax\(44px,1fr\)\)/,'a matriz multibanda fornece células de toque de 44 px');
+assert.match(css,/\.reference-item a\{display:inline-flex;align-items:center;min-height:44px/,'links de referência mantêm alvos adequados em tablets');
+console.log('OK: geometria SVG ajustada ao contêiner, cabeçalho intermediário e alvos de toque V1.3.40.');

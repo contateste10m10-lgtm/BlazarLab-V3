@@ -1,0 +1,22 @@
+#!/usr/bin/env node
+'use strict';
+const fs=require('node:fs');const path=require('node:path');const assert=require('node:assert/strict');
+const root=path.resolve(__dirname,'..');
+const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
+const js=fs.readFileSync(path.join(root,'blazarlab.js'),'utf8');
+const css=fs.readFileSync(path.join(root,'styles.css'),'utf8');
+const version=fs.readFileSync(path.join(root,'VERSION'),'utf8').trim();
+assert.equal(version,'1.3.40');
+for(const id of ['sampenBandHeatmapStatus','sampenSensitivityStatus','sampenBandHeatmapScrollHint','sampenSensitivityScrollHint','sensitivityMobileMatrix']) assert.match(html,new RegExp(`id="${id}"`),`faltou o apoio móvel ${id}`);
+assert.match(js,/Tolerância r\/σ<\/text>/,'unidade de r deve ficar separada dos ticks');
+assert.match(js,/\$\{format\(r,2\)\}<\/text>/,'valores r não devem repetir sigma em cada coluna');
+assert.doesNotMatch(js,/Bandas de energia \(keV\) · contorno branco = fonte e banda ativas/,'texto longo de status não deve ficar dentro do SVG do heatmap');
+assert.doesNotMatch(js,/\$\{escapeXML\(row\.band\)\} · \$\{escapeXML\(source\.name\)\} · \$\{modeTitle\} · anel = m=2/,'a descrição da seleção m×r deve ficar fora do SVG');
+assert.match(js,/sampenSensitivityStatus/,'a seleção m×r deve ser descrita externamente');
+assert.match(js,/sampenBandHeatmapStatus/,'a seleção fonte × banda deve ser descrita externamente');
+assert.match(css,/sensitivity-mobile-table th\[scope=\"row\"\]\{width:55px\}/,'a tolerância deve ficar no eixo vertical da matriz móvel');
+assert.match(js,/const dimensions = \[\.\.\.new Set\(cells\.map\(cell => cell\.m\)\)\]\.sort/,'a tabela móvel organiza as dimensões ordinais em colunas');
+assert.match(css,/sensitivity-mobile-cell\{display:grid;place-items:center;width:100%/,'as células responsivas devem preencher sua coluna sem provocar overflow');
+assert.match(css,/\.matrix-scroll-hint\{display:block/,'deve haver dica visível de rolagem em telas estreitas');
+assert.match(css,/\.matrix-selection-status\{[^}]*overflow-wrap:anywhere/s,'o texto de seleção deve quebrar dentro da largura disponível');
+console.log('OK: matriz fonte×banda preservada e sensibilidade SampEn transposta para caber no mobile — BlazarLab 1.3.40.');

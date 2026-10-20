@@ -1,0 +1,28 @@
+#!/usr/bin/env node
+'use strict';
+const fs=require('node:fs');const path=require('node:path');const assert=require('node:assert/strict');
+const root=path.resolve(__dirname,'..');
+const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
+const css=fs.readFileSync(path.join(root,'styles.css'),'utf8');
+const js=fs.readFileSync(path.join(root,'blazarlab.js'),'utf8');
+const version=fs.readFileSync(path.join(root,'VERSION'),'utf8').trim();
+assert.equal(version,'1.3.40');
+assert.match(html,/data-theme-choice="light"/);assert.match(html,/data-theme-choice="dark"/);
+assert.match(html,/id="secretBackgroundTrigger"/);assert.match(html,/id="secretSoundToggle"/);assert.match(html,/id="secretBackgroundPicker"(?! hidden)/);assert.match(html,/data-accent-choice="blue"/);assert.match(html,/data-accent-choice="rose"/);assert.match(html,/data-background-choice="agn"/);assert.match(html,/data-background-choice="nebula"/);assert.match(html,/data-background-choice="normal"/);
+assert.match(js,/secretPaletteUnlocked=true/);assert.match(js,/root\.dataset\.secretUnlocked='true'/);assert.match(js,/root\.dataset\.accentPalette=initialPalette/,'a paleta inicial ou salva é aplicada');assert.match(js,/localStorage\.getItem\('blazarlab-background-mode'\)/,'o fundo selecionado é restaurado');
+assert.match(js,/function chartDisplayColor\(color\)[\s\S]*?LIGHT_CHART_COLORS\[normalized\] \|\| color/,'a cor da série só recebe ajuste de contraste no tema claro');
+assert.doesNotMatch(js,/SECRET_CHART_COLORS|activeSecretChartColors|paletteOriginalFill/,'a paleta da interface não remapeia séries científicas');assert.match(js,/const setAccentPalette=\(palette\)=>/,'o seletor de paleta deve alternar entre azul e rosa');assert.match(js,/document\.documentElement\.dataset\.accentPalette=selected/,'a escolha de paleta deve ser aplicada diretamente');assert.match(js,/Anchor the selected-point label in the quiet upper-left plot area/);
+assert.match(css,/background-image:linear-gradient\(90deg,rgba\(6,8,17/);assert.match(css,/assets\/agn-background\.svg/);assert.match(css,/assets\/nebula-background\.svg/);
+assert.match(css,/html\[data-theme=\"light\"\]:is\(\[data-background-mode=\"agn\"\],\[data-background-mode=\"nebula\"\]\) \.site-header/);
+assert.match(css,/linear-gradient\(180deg,rgba\(255,227,237/);assert.match(css,/--bg:#fff3f7/);assert.match(html,/Azul original/);assert.match(html,/Rosa cósmico/);
+const changelog=fs.readFileSync(path.join(root,'CHANGELOG.md'),'utf8');
+assert.doesNotMatch(changelog,/paleta secreta desbloqueada|após desbloqueio|fundos ilustrados de AGN e nebulosa/i,'o changelog público não deve revelar detalhes do recurso oculto');
+assert.match(css,/\.chart-frame-scrollwide svg#sampenBandHeatmapPlot\{width:820px!important;min-width:820px!important/);
+assert.match(css,/\.mobile-plot-svg#sampenSensitivityPlot \.plot-label\{font-size:14px!important\}/);
+assert.ok(fs.statSync(path.join(root,'assets','agn-background.svg')).size>500);
+assert.ok(fs.statSync(path.join(root,'assets','nebula-background.svg')).size>500);
+assert.doesNotMatch(js,/svg:not\(\[id\$=\"HeatmapPlot\"\]\):not\(#multibandCurvePlot\)/,'não há remapeamento SVG global de séries por paleta');
+assert.match(css,/--teal:#F43F5E/,'destaque rosa-vermelho vivo no modo escuro com fundo astronômico');
+assert.match(css,/background-color:transparent!important;background-image:none!important/,'fundo do documento fica transparente no mobile para usar camada fixa');
+assert.match(css,/body::before\{\s*background:linear-gradient[\s\S]*?assets\/agn-background-blue\.svg/,'o mobile dispõe de arte AGN azul e fixa');
+console.log('OK: controles visuais disponíveis, fundos persistentes, arte fixa no mobile e gráficos neutros à paleta de interface.');
